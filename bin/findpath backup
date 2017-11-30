@@ -1,0 +1,57 @@
+public Iterator<Node> findPath(int s, int d, int m) throws GraphException
+	{
+		int cost = 0;
+		Stack<Node> nodeStack = new Stack<Node>();
+		int track = s;
+		while (track != d)
+		{
+			boolean notFound = false;
+			Node trackNode = nodeList[track];
+			trackNode.setMark(true);
+			Edge road = null;
+			Iterator<Edge> iter = mapGraph.incidentEdges(trackNode);
+			while (iter.hasNext())
+			{
+				road = iter.next();
+				Node nextNode = road.secondEndpoint();
+				if (road.getLabel().equals(""))
+				{
+					if (nextNode.getMark())
+						road.setLabel("back");
+					else if (cost + road.getType() <= budget)
+					{	
+						road.setLabel("discovery");
+						cost = cost + road.getType();
+						System.out.println("Road: " + trackNode.getName() + " to " + nextNode.getName() + " Road cost " + road.getType() + " Total cost: " + cost + " Budget: " + budget);
+						nodeStack.push(trackNode);
+						track = nextNode.getName();
+						break;
+					}
+				}
+				if (!iter.hasNext())
+				{
+					if (nodeStack.isEmpty())
+						notFound = true;
+					else
+					{
+						track = nodeStack.pop().getName();
+						Edge lastRoad = mapGraph.getEdge(nodeList[track], trackNode);
+						mapGraph.getEdge(nodeList[track], trackNode).setLabel("back");
+						cost = cost - lastRoad.getType();
+						System.out.println("Going back from " + lastRoad.secondEndpoint().getName() + " to " + lastRoad.firstEndpoint().getName()) ;
+						break;
+					}	
+				}
+			}
+			if (notFound)
+				break;
+		}
+		
+		if (track != d)
+			return null;
+		else
+		{
+			nodeStack.push(nodeList[track]);
+			return nodeStack.iterator();
+		}
+	}
